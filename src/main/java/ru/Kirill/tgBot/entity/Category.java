@@ -16,7 +16,7 @@ public class Category {
     @Column(nullable = false, length = 50, unique = true)
     private String name;
 
-    @ManyToOne
+    @ManyToOne(optional = true)
     private Category parent;
 
     public Long getId() {

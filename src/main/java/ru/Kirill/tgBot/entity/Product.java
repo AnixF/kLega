@@ -12,7 +12,7 @@ public class Product
     @GeneratedValue
     private Long id;
 
-    @ManyToOne
+    @ManyToOne(optional = false)
     private Category category;
 
     @Column(nullable = false,length = 50,unique = true)
