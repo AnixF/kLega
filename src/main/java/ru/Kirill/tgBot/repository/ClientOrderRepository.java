@@ -10,5 +10,5 @@ import java.util.List;
 @RepositoryRestResource(collectionResourceRel =  "clientOrders", path = "clientOrders")
 public interface ClientOrderRepository extends CrudRepository<ClientOrder, Long>
 {
-    List<ClientOrder> findByClient(Client client);
+    List<ClientOrder> findOrderByClientId(Long client_id);
 }

@@ -16,9 +16,9 @@ public class AppRestController {
     }
 
     @GetMapping(path = "/rest/products/search")
-    List<Product> getProductsByCategoryId(@RequestParam(name = "categoryId") Long id) {
+    List<Product> getProductsByCategoryId(@RequestParam(name = "categoryId") Long id)
+    {
         return appService.getProductsByCategoryId(id);
-
     }
 
     @GetMapping(path = "/rest/clients/{id}/orders")
@@ -32,6 +32,7 @@ public class AppRestController {
     {
         return appService.getClientProducts(id);
     }
+
     @GetMapping(path = "rest/products/popular")
     List<Product> getTopPopularProducts(@RequestParam(name = "limit") Integer limit)
     {
@@ -39,8 +40,3 @@ public class AppRestController {
     }
 }
 
-/**
- * Получить указанное кол-во самых популярных (наибольшее
- * количество штук в заказах) товаров среди клиентов
- * @param limit максимальное кол-во товаров
- */
