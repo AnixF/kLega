@@ -3,8 +3,7 @@ package ru.Kirill.tgBot;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import ru.Kirill.tgBot.entity.Category;
-import ru.Kirill.tgBot.entity.Product;
+import ru.Kirill.tgBot.entity.*;
 import ru.Kirill.tgBot.repository.*;
 
 import java.math.BigDecimal;
@@ -19,10 +18,71 @@ class FillingTests
 
     @Autowired
     private ProductRepository productRepository;
+    @Autowired
+    private ClientOrderRepository clientOrderRepository;
+    @Autowired
+    private  OrderProductRepository orderProductRepository;
 
-
+    @Autowired
+    private ClientRepository clientRepository;
 
     @Test
+    void createOrders(){
+        Client client = new Client();
+        client.setExternalId(2L);
+        client.setFullName("A");
+        client.setPhoneNumber("2");
+        client.setAddress("a");
+        clientRepository.save(client);
+
+        ClientOrder clientOrder = new ClientOrder();
+        clientOrder.setClient(client);
+        clientOrder.setStatus(1);
+        clientOrder.setTotal(BigDecimal.valueOf(121111.22));
+        clientOrderRepository.save(clientOrder);
+
+        Category category1 = new Category();
+        category1.setName("pizzaaa");
+        categoryRepository.save(category1);
+
+
+        Product product = new Product();
+        product.setCategory(category1);
+        product.setName("aaaa");
+        product.setDescription("a2a");
+        product.setPrice(BigDecimal.valueOf(1));
+        productRepository.save(product);
+
+        Product product2 = new Product();
+        product2.setCategory(category1);
+        product2.setName("a");
+        product2.setDescription("aa");
+        product2.setPrice(BigDecimal.valueOf(33));
+        productRepository.save(product2);
+
+        Product product1 = new Product();
+        product1.setCategory(category1);
+        product1.setName("va");
+        product1.setDescription("ava");
+        product1.setPrice(BigDecimal.valueOf(1));
+        productRepository.save(product1);
+
+        OrderProduct orderProduct = new OrderProduct();
+        orderProduct.setClientOrder(clientOrder);
+        orderProduct.setProduct(product);
+        orderProduct.setCountProduct(2);
+        orderProductRepository.save(orderProduct);
+
+
+        OrderProduct orderProduct1 = new OrderProduct();
+        orderProduct1.setClientOrder(clientOrder);
+        orderProduct1.setProduct(product1);
+        orderProduct1.setCountProduct(4);
+        orderProductRepository.save(orderProduct1);
+
+    }
+
+    //@Test
     void createMenu()
     {
         //Main categories
