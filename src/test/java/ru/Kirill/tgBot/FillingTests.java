@@ -35,15 +35,31 @@ class FillingTests
         client.setAddress("a");
         clientRepository.save(client);
 
+
+        Client client1 = new Client();
+        client1.setExternalId(3L);
+        client1.setFullName("B");
+        client1.setPhoneNumber("3");
+        client1.setAddress("b");
+        clientRepository.save(client1);
+
+
         ClientOrder clientOrder = new ClientOrder();
         clientOrder.setClient(client);
         clientOrder.setStatus(1);
         clientOrder.setTotal(BigDecimal.valueOf(121111.22));
         clientOrderRepository.save(clientOrder);
 
+        ClientOrder clientOrder1 = new ClientOrder();
+        clientOrder1.setClient(client1);
+        clientOrder1.setStatus(2);
+        clientOrder1.setTotal(BigDecimal.valueOf(10));
+        clientOrderRepository.save(clientOrder1);
+
         Category category1 = new Category();
         category1.setName("pizzaaa");
         categoryRepository.save(category1);
+
 
 
         Product product = new Product();
@@ -53,32 +69,51 @@ class FillingTests
         product.setPrice(BigDecimal.valueOf(1));
         productRepository.save(product);
 
-        Product product2 = new Product();
-        product2.setCategory(category1);
-        product2.setName("a");
-        product2.setDescription("aa");
-        product2.setPrice(BigDecimal.valueOf(33));
-        productRepository.save(product2);
-
         Product product1 = new Product();
         product1.setCategory(category1);
-        product1.setName("va");
-        product1.setDescription("ava");
-        product1.setPrice(BigDecimal.valueOf(1));
+        product1.setName("a");
+        product1.setDescription("aa");
+        product1.setPrice(BigDecimal.valueOf(33));
         productRepository.save(product1);
+
+        Product product2 = new Product();
+        product2.setCategory(category1);
+        product2.setName("va");
+        product2.setDescription("ava");
+        product2.setPrice(BigDecimal.valueOf(3));
+        productRepository.save(product2);
 
         OrderProduct orderProduct = new OrderProduct();
         orderProduct.setClientOrder(clientOrder);
         orderProduct.setProduct(product);
-        orderProduct.setCountProduct(2);
+        orderProduct.setCountProduct(1);
         orderProductRepository.save(orderProduct);
 
 
         OrderProduct orderProduct1 = new OrderProduct();
         orderProduct1.setClientOrder(clientOrder);
         orderProduct1.setProduct(product1);
-        orderProduct1.setCountProduct(4);
+        orderProduct1.setCountProduct(22);
         orderProductRepository.save(orderProduct1);
+
+
+        OrderProduct orderProduct2 = new OrderProduct();
+        orderProduct2.setClientOrder(clientOrder);
+        orderProduct2.setProduct(product2);
+        orderProduct2.setCountProduct(3);
+        orderProductRepository.save(orderProduct2);
+
+        OrderProduct orderProduct3 = new OrderProduct();
+        orderProduct3.setClientOrder(clientOrder1);
+        orderProduct3.setProduct(product2);
+        orderProduct3.setCountProduct(50);
+        orderProductRepository.save(orderProduct3);
+
+        OrderProduct orderProduct4 = new OrderProduct();
+        orderProduct4.setClientOrder(clientOrder1);
+        orderProduct4.setProduct(product);
+        orderProduct4.setCountProduct(100);
+        orderProductRepository.save(orderProduct4);
 
     }
 
