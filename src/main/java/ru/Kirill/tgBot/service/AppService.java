@@ -51,8 +51,11 @@ public class AppService  implements EntitiesService
 
     @Override
     public List<Product> getTopPopularProducts(Integer limit)
-    {
-        return orderProductRepository.getTopPopularProducts(limit);
+    {List<Product> topPopularProducts = orderProductRepository.getTopPopularProducts();
+        if (topPopularProducts.size() > limit) {
+            topPopularProducts = topPopularProducts.subList(0, limit);
+        }
+        return topPopularProducts;
     }
 
     @Override

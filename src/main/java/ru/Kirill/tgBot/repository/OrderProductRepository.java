@@ -16,11 +16,7 @@ public interface OrderProductRepository extends CrudRepository<OrderProduct, Lon
     List<Product> findProducts(List<ClientOrder> clientOrders);
 
 
-    @Query(value = "SELECT op.product, COUNT(op.product) AS product_count\n" +
-            "FROM ORDER_PRODUCT op\n" +
-            "GROUP BY op.product\n" +
-            "ORDER BY product_count DESC\n" +
-            "LIMIT ?1", nativeQuery = true)
 
-    List<Product> getTopPopularProducts(Integer limit);
-}
+    @Query("select op.product from OrderProduct op group by op.product order by count(op.product) desc")
+    List<Product> getTopPopularProducts();
+    }

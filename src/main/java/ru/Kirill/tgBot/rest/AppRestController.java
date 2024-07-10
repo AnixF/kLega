@@ -16,7 +16,7 @@ public class AppRestController {
     }
 
     @GetMapping(path = "/rest/products/search")
-    List<Product> getProductsByCategoryId(@RequestParam Long id) {
+    List<Product> getProductsByCategoryId(@RequestParam(name = "categoryId") Long id) {
         return appService.getProductsByCategoryId(id);
 
     }
@@ -33,7 +33,7 @@ public class AppRestController {
         return appService.getClientProducts(id);
     }
     @GetMapping(path = "rest/products/popular")
-    List<Product> getTopPopularProducts(@RequestParam Integer limit)
+    List<Product> getTopPopularProducts(@RequestParam(name = "limit") Integer limit)
     {
         return appService.getTopPopularProducts(limit);
     }
