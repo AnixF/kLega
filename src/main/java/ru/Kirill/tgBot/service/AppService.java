@@ -35,7 +35,7 @@ public class AppService  implements EntitiesService
     @Override
     public List<Product> getProductsByCategoryId(Long id) {
         Category category = categoryRepository.findById(id).orElseThrow();
-        return productRepository.findByCategory(category);
+       return productRepository.findByCategory(category);
     }
 
     @Override
@@ -51,11 +51,10 @@ public class AppService  implements EntitiesService
     }
 
     @Override
-    public List<Product> getTopPopularProducts(Integer limit)
-    {List<Product> topPopularProducts = orderProductRepository.getTopPopularProducts();
+    public List<Product> getTopPopularProducts(Integer limit) {
+        List<Product> topPopularProducts = orderProductRepository.getTopPopularProducts();
         if (topPopularProducts.size() > limit) {
-            topPopularProducts = topPopularProducts.subList(0, limit);
-        }
+        topPopularProducts = topPopularProducts.subList(0,limit);}
         return topPopularProducts;
     }
 
