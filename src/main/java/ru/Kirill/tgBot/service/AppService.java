@@ -11,6 +11,7 @@ import ru.Kirill.tgBot.repository.*;
 
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -53,7 +54,7 @@ public class AppService  implements EntitiesService
     public List<Product> getTopPopularProducts(Integer limit)
     {List<Product> topPopularProducts = orderProductRepository.getTopPopularProducts();
         if (topPopularProducts.size() > limit) {
-            topPopularProducts = topPopularProducts.subList(0, limit-1);
+            topPopularProducts = topPopularProducts.subList(0, limit);
         }
         return topPopularProducts;
     }

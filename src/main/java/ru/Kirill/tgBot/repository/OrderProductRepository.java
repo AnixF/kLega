@@ -17,6 +17,6 @@ public interface OrderProductRepository extends CrudRepository<OrderProduct, Lon
 
 
 
-    @Query("select op.product from OrderProduct op group by op.product order by count(op.product) desc")
+    @Query("select op.product from OrderProduct op where op.clientOrder in :clientOrders")
     List<Product> getTopPopularProducts();
     }
