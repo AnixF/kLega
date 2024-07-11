@@ -24,6 +24,8 @@ public class Product
     @Column(nullable = false, precision = 15, scale = 2)
     private BigDecimal price;
 
+
+
     public Long getId() {
         return id;
     }
