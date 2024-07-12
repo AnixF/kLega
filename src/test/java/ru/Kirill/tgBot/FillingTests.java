@@ -26,7 +26,7 @@ class FillingTests
     @Autowired
     private ClientRepository clientRepository;
 
-    @Test
+    //@Test
     void createOrders(){
         Client client = new Client();
         client.setExternalId(2L);
@@ -117,7 +117,7 @@ class FillingTests
 
     }
 
-    //@Test
+    @Test
     void createMenu()
     {
         //Main categories
