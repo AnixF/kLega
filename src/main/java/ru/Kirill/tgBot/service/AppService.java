@@ -62,14 +62,14 @@ public class AppService implements EntitiesService {
     public Client createClient(Long externalId) {
         Client client = new Client();
         client.setExternalId(externalId);
-        client.setAddress("");
+        client.setAddress("Улица Пушкина, дом Колотушкина");
         client.setFullName("");
         client.setPhoneNumber("");
         return clientRepository.save(client);
     }
 
-    public Client updateClient(Client client) {
-        return clientRepository.save(client);
+    public void updateClient(Client client) {
+        clientRepository.save(client);
     }
 
     public ClientOrder createOrder(Client client) {
@@ -102,19 +102,12 @@ public class AppService implements EntitiesService {
         return orderProductRepository.findByClientOrder(order);
     }
 
-    public void deleteOrderProducts(List<OrderProduct> orderProducts) {
-        orderProductRepository.deleteAll(orderProducts);
-    }
-
-    public void deleteOrder(ClientOrder order) {
-        clientOrderRepository.delete(order);
-    }
 
     public Product getProductById(Long productId) {
         return productRepository.findById(productId).orElse(null);
     }
 
-    public ClientOrder getOrderById(Long orderId) {
-        return clientOrderRepository.findById(orderId).orElse(null);
+    public void updateOrder(ClientOrder currentOrder) {
+        clientOrderRepository.save(currentOrder);
     }
 }

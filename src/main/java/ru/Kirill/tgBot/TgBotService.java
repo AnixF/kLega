@@ -22,13 +22,22 @@ import java.util.stream.Collectors;
 
 @Component
 public class TgBotService {
+
+    public enum ClientDataField {
+        NAME,
+        ADDRESS,
+        PHONE;
+    }
+
     private final TelegramBot bot = new TelegramBot("7389058400:AAGCLH0HKlr3qd7-JbEyB0yhcA2VCD5YlLk");
 
     private final AppService appService;
 
+    private final Map<Long, Boolean> mainMenuShownMap = new HashMap<>();
+
     private ClientOrder currentOrder;
     private final Map<Long, Long> productSelectionMap = new HashMap<>();
-    private final Map<Long, String> clientDataUpdateMap = new HashMap<>();
+    private final Map<Long, ClientDataField> clientDataUpdateMap = new HashMap<>();
 
     @Autowired
     public TgBotService(AppService appService) {
@@ -66,12 +75,13 @@ public class TgBotService {
                     updateClientData(chatId, client, messageText);
                 } else {
                     switch (messageText) {
-                        case "Привет" -> sendReply(chatId, "Привет!");
-                        case "Оформить заказ" -> startNewOrder(chatId, client);
-                        case "Мои заказы" -> showClientOrders(chatId, client);
-                        case "Профиль" -> showClientProfile(chatId, client);
-                        case "В основное меню" -> sendReply(chatId, "Вы в основном меню.");
-                        default -> sendReply(chatId, "Неизвестная команда, попробуйте встроенную клавиатуру");
+                        case  BotConstants.START -> sendReply(chatId, BotConstants.START_MESSAGE);
+                        case BotConstants.HELLO -> sendReply(chatId, BotConstants.HELLO);
+                        case BotConstants.ORDER  -> startNewOrder(chatId, client);
+                        case BotConstants.MY_ORDERS -> showClientOrders(chatId, client);
+                        case BotConstants.PROFILE -> showClientProfile(chatId, client);
+                        case BotConstants.MAIN_MENU -> sendReply(chatId, BotConstants.MAIN_MENU_MESSAGE);
+                        default -> sendReply(chatId, BotConstants.UNKNOWN_COMMAND);
                     }
                 }
                 sendMainMenu(chatId);
@@ -80,24 +90,27 @@ public class TgBotService {
             String callbackData = update.callbackQuery().data();
             Long chatId = update.callbackQuery().message().chat().id();
             System.out.println("CallbackData: " + callbackData);
-            if (callbackData.startsWith("category:")) {
+
+            if (callbackData.startsWith(BotConstants.CATEGORY_PREFIX)) {
                 Long categoryId = Long.parseLong(callbackData.split(":")[1]);
                 showSubCategoriesOrProducts(chatId, categoryId);
-            } else if (callbackData.startsWith("product:")) {
+
+            } else if (callbackData.startsWith(BotConstants.PRODUCT_PREFIX)) {
                 Long productId = Long.parseLong(callbackData.split(":")[1]);
                 askProductQuantity(chatId, productId);
-            } else if (callbackData.startsWith("updateName")) {
-                clientDataUpdateMap.put(chatId, "name");
-                sendReply(chatId, "Введите новое имя:");
-            } else if (callbackData.startsWith("updateAddress")) {
-                clientDataUpdateMap.put(chatId, "address");
-                sendReply(chatId, "Введите новый адрес:");
-            } else if (callbackData.startsWith("updatePhone")) {
-                clientDataUpdateMap.put(chatId, "phone");
-                sendReply(chatId, "Введите новый номер телефона:");
-            } else if (callbackData.startsWith("closeOrder:")) {
-                Long orderId = Long.parseLong(callbackData.split(":")[1]);
-                closeOrder(chatId, orderId);
+
+            } else if (callbackData.startsWith(BotConstants.UPDATE_NAME)) {
+                clientDataUpdateMap.put(chatId, ClientDataField.NAME);
+                sendReply(chatId, BotConstants.ENTER_NEW_NAME);
+
+            } else if (callbackData.startsWith(BotConstants.UPDATE_ADDRESS)) {
+                clientDataUpdateMap.put(chatId, ClientDataField.ADDRESS);
+                sendReply(chatId, BotConstants.ENTER_NEW_ADDRESS);
+
+            } else if (callbackData.startsWith(BotConstants.UPDATE_PHONE)) {
+                clientDataUpdateMap.put(chatId, ClientDataField.PHONE);
+                sendReply(chatId, BotConstants.ENTER_NEW_PHONE);
+
             }
         }
     }
@@ -108,6 +121,9 @@ public class TgBotService {
     }
 
     private void sendMainMenu(Long chatId) {
+        if (Boolean.TRUE.equals(mainMenuShownMap.get(chatId))) {
+            return;
+        }
         List<KeyboardButton> categories = appService.getCategoryByParentId(0L)
                 .stream()
                 .map(category -> new KeyboardButton(category.getName()))
@@ -120,10 +136,21 @@ public class TgBotService {
         markup.addRow(new KeyboardButton("В основное меню"));
         SendMessage message = new SendMessage(chatId, "Выберите опцию:").replyMarkup(markup);
         bot.execute(message);
+
+        mainMenuShownMap.put(chatId, true);
     }
 
     private void startNewOrder(Long chatId, Client client) {
-        currentOrder = appService.createOrder(client);
+        if (currentOrder == null) {
+            currentOrder = appService.createOrder(client);
+        }
+
+        if (!appService.getOrderProducts(currentOrder).isEmpty()) {
+            closeCurrentOrder(chatId, client);
+            currentOrder = appService.createOrder(client);
+        } else {
+            sendReply(chatId, "Ваш заказ пуст. Пожалуйста, добавьте товары.");
+        }
         showCategories(chatId);
     }
 
@@ -198,38 +225,54 @@ public class TgBotService {
             sendReply(chatId, "У вас нет заказов.");
         } else {
             for (ClientOrder order : orders) {
-                StringBuilder orderDetails = new StringBuilder("Заказ #" + order.getId() + ":\n");
-                List<OrderProduct> orderProducts = appService.getOrderProducts(order);
-                for (OrderProduct orderProduct : orderProducts) {
-                    orderDetails.append(orderProduct.getProduct().getName())
-                            .append(" - ")
-                            .append(orderProduct.getCountProduct())
-                            .append(" шт. - ")
-                            .append(orderProduct.getProduct().getPrice().multiply(BigDecimal.valueOf(orderProduct.getCountProduct())))
-                            .append(" руб.\n");
-                }
-                orderDetails.append("Итого: ").append(order.getTotal()).append(" руб.\n");
+                if (order.getStatus() == 2) {
+                    StringBuilder orderDetails = new StringBuilder("Заказ #" + order.getId() + ":\n");
+                    orderDetails.append("Статус: закрыт\n");
+                    orderDetails.append("Список товаров:\n");
+                    List<OrderProduct> orderProducts = appService.getOrderProducts(order);
+                    for (OrderProduct orderProduct : orderProducts) {
+                        orderDetails.append(orderProduct.getProduct().getName())
+                                .append(" - ")
+                                .append(orderProduct.getCountProduct())
+                                .append(" шт. - ")
+                                .append(orderProduct.getProduct().getPrice().multiply(BigDecimal.valueOf(orderProduct.getCountProduct())))
+                                .append(" руб.\n");
+                    }
+                    orderDetails.append("Итого: ").append(order.getTotal()).append(" руб.\n");
 
-                InlineKeyboardMarkup markup = new InlineKeyboardMarkup(
-                        new InlineKeyboardButton("Закрыть заказ").callbackData("closeOrder:" + order.getId())
-                );
-                SendMessage message = new SendMessage(chatId, orderDetails.toString()).replyMarkup(markup);
-                bot.execute(message);
+                sendReply(chatId, orderDetails.toString());
+                }
             }
         }
     }
 
-    private void closeOrder(Long chatId, Long orderId) {
-        ClientOrder order = appService.getOrderById(orderId);
-        if (order != null) {
-            List<OrderProduct> orderProducts = appService.getOrderProducts(order);
-            appService.deleteOrderProducts(orderProducts);
-            appService.deleteOrder(order);
-            sendReply(chatId, "Заказ #" + orderId + " был закрыт.");
-        } else {
-            sendReply(chatId, "Заказ не найден.");
+    private void closeCurrentOrder(Long chatId, Client client) {
+        List<OrderProduct> orderProducts = appService.getOrderProducts(currentOrder);
+        BigDecimal totalAmount = orderProducts.stream()
+                .map(op -> op.getProduct().getPrice().multiply(BigDecimal.valueOf(op.getCountProduct())))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        StringBuilder orderDetails = new StringBuilder("Заказ #" + currentOrder.getId() +
+                " подтверждён. Курьер уже едет к " +
+                "вам по адресу " + client.getAddress() + ".\n"+ "Приблизительное " +
+                "время доставки: 45 тысяч лет\n");
+        for (OrderProduct orderProduct : orderProducts) {
+            orderDetails.append(orderProduct.getProduct().getName())
+                    .append(" - ")
+                    .append(orderProduct.getCountProduct())
+                    .append(" шт. - ")
+                    .append(orderProduct.getProduct().getPrice().multiply(BigDecimal.valueOf(orderProduct.getCountProduct())))
+                    .append(" руб.\n");
         }
-        showClientOrders(chatId, appService.getClientByExternalId(chatId));
+        orderDetails.append("Итого: ").append(totalAmount).append(" руб.\n");
+
+        currentOrder.setStatus(2);
+        appService.updateOrder(currentOrder);
+
+        sendReply(chatId, orderDetails.toString());
+
+
+        currentOrder = appService.createOrder(client);
     }
 
     private void showClientProfile(Long chatId, Client client) {
@@ -245,17 +288,17 @@ public class TgBotService {
     }
 
     private void updateClientData(Long chatId, Client client, String newData) {
-        String updateType = clientDataUpdateMap.remove(chatId);
+        ClientDataField updateType = clientDataUpdateMap.remove(chatId);
         switch (updateType) {
-            case "name" -> {
+            case NAME -> {
                 client.setFullName(newData);
                 sendReply(chatId, "Имя обновлено.");
             }
-            case "address" -> {
+            case ADDRESS -> {
                 client.setAddress(newData);
                 sendReply(chatId, "Адрес обновлен.");
             }
-            case "phone" -> {
+            case PHONE -> {
                 client.setPhoneNumber(newData);
                 sendReply(chatId, "Телефон обновлен.");
             }
