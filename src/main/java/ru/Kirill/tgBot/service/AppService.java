@@ -63,7 +63,7 @@ public class AppService implements EntitiesService {
         Client client = new Client();
         client.setExternalId(externalId);
         client.setAddress("Улица Пушкина, дом Колотушкина");
-        client.setFullName("");
+        client.setFullName("John Doe");
         client.setPhoneNumber("");
         return clientRepository.save(client);
     }
@@ -74,7 +74,7 @@ public class AppService implements EntitiesService {
 
     public ClientOrder createOrder(Client client) {
         ClientOrder order = new ClientOrder();
-        order.setStatus(1);
+        order.setStatus(ClientOrder.OrderStatus.CONFIRMED);
         order.setTotal(BigDecimal.valueOf(0));
         order.setClient(client);
         return clientOrderRepository.save(order);

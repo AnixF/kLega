@@ -46,13 +46,13 @@ class FillingTests
 
         ClientOrder clientOrder = new ClientOrder();
         clientOrder.setClient(client);
-        clientOrder.setStatus(1);
+        clientOrder.setStatus(ClientOrder.OrderStatus.CONFIRMED);
         clientOrder.setTotal(BigDecimal.valueOf(121111.22));
         clientOrderRepository.save(clientOrder);
 
         ClientOrder clientOrder1 = new ClientOrder();
         clientOrder1.setClient(client1);
-        clientOrder1.setStatus(2);
+        clientOrder1.setStatus(ClientOrder.OrderStatus.CLOSED);
         clientOrder1.setTotal(BigDecimal.valueOf(10));
         clientOrderRepository.save(clientOrder1);
 

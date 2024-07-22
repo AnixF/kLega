@@ -1,16 +1,19 @@
 package ru.Kirill.tgBot.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
-import jakarta.persistence.Column;
-import jakarta.persistence.ManyToOne;
+import jakarta.persistence.*;
 
 import java.math.BigDecimal;
 
 @Entity
 public class ClientOrder
 {
+
+    public enum OrderStatus {
+        PENDING,
+        CONFIRMED,
+        CLOSED;
+    }
+
     @Id
     @GeneratedValue
     private Long id;
@@ -19,7 +22,8 @@ public class ClientOrder
     private Client client;
 
     @Column(nullable = false)
-    private Integer status;
+    @Enumerated(EnumType.STRING)
+    private OrderStatus status;
 
     @Column(nullable = false, precision = 15, scale = 2)
     private BigDecimal total;
@@ -40,11 +44,11 @@ public class ClientOrder
         this.client = client;
     }
 
-    public Integer getStatus() {
+    public OrderStatus getStatus() {
         return status;
     }
 
-    public void setStatus(Integer status) {
+    public void setStatus(OrderStatus status) {
         this.status = status;
     }
 

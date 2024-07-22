@@ -7,6 +7,7 @@ import com.pengrad.telegrambot.model.request.InlineKeyboardButton;
 import com.pengrad.telegrambot.model.request.InlineKeyboardMarkup;
 import com.pengrad.telegrambot.model.request.KeyboardButton;
 import com.pengrad.telegrambot.model.request.ReplyKeyboardMarkup;
+import com.pengrad.telegrambot.request.AnswerCallbackQuery;
 import com.pengrad.telegrambot.request.SendMessage;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -74,6 +75,20 @@ public class TgBotService {
             String messageText = update.message().text();
             System.out.println("ChatId: " + chatId);
             System.out.println("Message: " + messageText);
+            sendMainMenu(chatId);
+            if (update.message().contact() != null) {
+                String phoneNumber = update.message().contact().phoneNumber();
+                Client client = appService.getClientByExternalId(chatId);
+                if (client != null && clientDataUpdateMap.get(chatId) == ClientDataField.PHONE) {
+                    client.setPhoneNumber(phoneNumber);
+                    appService.updateClient(client);
+                    clientDataUpdateMap.remove(chatId);
+                    sendReply(chatId, "Телефон обновлен.");
+                    sendMainMenu(chatId);
+                    startNewOrder(chatId, client);
+                }
+                return;
+            }
             if (messageText != null) {
                 Client client = appService.getClientByExternalId(chatId);
                 if (client == null) {
@@ -100,7 +115,7 @@ public class TgBotService {
                         default -> sendReply(chatId, UNKNOWN_COMMAND);
                     }
                 }
-                sendMainMenu(chatId);
+
             }
         } else if (update.callbackQuery() != null) {
             String callbackData = update.callbackQuery().data();
@@ -128,6 +143,7 @@ public class TgBotService {
                 sendReply(chatId, ENTER_NEW_PHONE);
 
             }
+            bot.execute(new AnswerCallbackQuery(update.callbackQuery().id()));
         }
     }
 
@@ -167,8 +183,37 @@ public class TgBotService {
         } else {
             sendReply(chatId, "Ваш заказ пуст. Пожалуйста, добавьте товары.");
         }
-        showCategories(chatId);
+        if (client.getFullName().isEmpty() || client.getAddress().isEmpty() || client.getPhoneNumber().isEmpty()) {
+            requestClientData(chatId, client);
+        }else {
+            showCategories(chatId);
+        }
+
     }
+    private void requestClientData(Long chatId, Client client) {
+        if (client.getFullName().isEmpty()) {
+            clientDataUpdateMap.put(chatId, ClientDataField.NAME);
+            sendReply(chatId, ENTER_NEW_NAME);
+        } else if (client.getAddress().isEmpty()) {
+            clientDataUpdateMap.put(chatId, ClientDataField.ADDRESS);
+            sendReply(chatId, ENTER_NEW_ADDRESS);
+        } else if (client.getPhoneNumber().isEmpty()) {
+            clientDataUpdateMap.put(chatId, ClientDataField.PHONE);
+            requestContact(chatId);
+        } else {
+            System.out.println(client.getFullName() + client.getAddress() + client.getPhoneNumber() );
+        }
+    }
+
+    private void requestContact(Long chatId) {
+        mainMenuShownMap.put(chatId, false);
+        ReplyKeyboardMarkup markup = new ReplyKeyboardMarkup(
+                new KeyboardButton("Отправить контакт").requestContact(true)
+        ).resizeKeyboard(true);
+        SendMessage message = new SendMessage(chatId, "Пожалуйста, отправьте свой контактный номер телефона.").replyMarkup(markup);
+        bot.execute(message);
+    }
+
 
     private void showCategories(Long chatId) {
         List<Category> categories = appService.getCategoryByParentId(null);
@@ -241,7 +286,7 @@ public class TgBotService {
             sendReply(chatId, "У вас нет заказов.");
         } else {
             for (ClientOrder order : orders) {
-                if (order.getStatus() == 2) {
+                if (order.getStatus() == ClientOrder.OrderStatus.CLOSED) {
                     StringBuilder orderDetails = new StringBuilder("Заказ #" + order.getId() + ":\n");
                     orderDetails.append("Статус: закрыт\n");
                     orderDetails.append("Список товаров:\n");
@@ -282,7 +327,7 @@ public class TgBotService {
         }
         orderDetails.append("Итого: ").append(totalAmount).append(" руб.\n");
 
-        currentOrder.setStatus(2);
+        currentOrder.setStatus(ClientOrder.OrderStatus.CLOSED);
         appService.updateOrder(currentOrder);
 
         sendReply(chatId, orderDetails.toString());
