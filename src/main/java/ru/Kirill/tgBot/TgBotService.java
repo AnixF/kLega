@@ -139,8 +139,7 @@ public class TgBotService {
                 sendReply(chatId, ENTER_NEW_ADDRESS);
 
             } else if (callbackData.startsWith(UPDATE_PHONE)) {
-                clientDataUpdateMap.put(chatId, ClientDataField.PHONE);
-                sendReply(chatId, ENTER_NEW_PHONE);
+                requestContact(chatId);
 
             }
             bot.execute(new AnswerCallbackQuery(update.callbackQuery().id()));
