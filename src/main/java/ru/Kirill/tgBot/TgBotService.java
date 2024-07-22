@@ -22,7 +22,23 @@ import java.util.stream.Collectors;
 
 @Component
 public class TgBotService {
-
+    public static final String START = "/start";
+    public static final String HELLO = "Привет";
+    public static final String ORDER = "Оформить заказ";
+    public static final String MY_ORDERS = "Мои заказы";
+    public static final String PROFILE = "Профиль";
+    public static final String MAIN_MENU = "В основное меню";
+    public static final String UNKNOWN_COMMAND = "Неизвестная команда, попробуйте встроенную клавиатуру";
+    public static final String START_MESSAGE = "Здравствуйте! Я - бот для автоматизации службы доставки еды";
+    public static final String MAIN_MENU_MESSAGE = "Выберите опцию:";
+    public static final String ENTER_NEW_NAME = "Введите новое имя:";
+    public static final String ENTER_NEW_ADDRESS = "Введите новый адрес:";
+    public static final String ENTER_NEW_PHONE = "Введите новый номер телефона:";
+    public static final String CATEGORY_PREFIX = "category:";
+    public static final String PRODUCT_PREFIX = "product:";
+    public static final String UPDATE_NAME = "updateName";
+    public static final String UPDATE_ADDRESS = "updateAddress";
+    public static final String UPDATE_PHONE = "updatePhone";
     public enum ClientDataField {
         NAME,
         ADDRESS,
@@ -75,13 +91,13 @@ public class TgBotService {
                     updateClientData(chatId, client, messageText);
                 } else {
                     switch (messageText) {
-                        case  BotConstants.START -> sendReply(chatId, BotConstants.START_MESSAGE);
-                        case BotConstants.HELLO -> sendReply(chatId, BotConstants.HELLO);
-                        case BotConstants.ORDER  -> startNewOrder(chatId, client);
-                        case BotConstants.MY_ORDERS -> showClientOrders(chatId, client);
-                        case BotConstants.PROFILE -> showClientProfile(chatId, client);
-                        case BotConstants.MAIN_MENU -> sendReply(chatId, BotConstants.MAIN_MENU_MESSAGE);
-                        default -> sendReply(chatId, BotConstants.UNKNOWN_COMMAND);
+                        case START -> sendReply(chatId, START_MESSAGE);
+                        case HELLO -> sendReply(chatId, HELLO);
+                        case ORDER  -> startNewOrder(chatId, client);
+                        case MY_ORDERS -> showClientOrders(chatId, client);
+                        case PROFILE -> showClientProfile(chatId, client);
+                        case MAIN_MENU -> sendReply(chatId, MAIN_MENU_MESSAGE);
+                        default -> sendReply(chatId, UNKNOWN_COMMAND);
                     }
                 }
                 sendMainMenu(chatId);
@@ -91,25 +107,25 @@ public class TgBotService {
             Long chatId = update.callbackQuery().message().chat().id();
             System.out.println("CallbackData: " + callbackData);
 
-            if (callbackData.startsWith(BotConstants.CATEGORY_PREFIX)) {
+            if (callbackData.startsWith(CATEGORY_PREFIX)) {
                 Long categoryId = Long.parseLong(callbackData.split(":")[1]);
                 showSubCategoriesOrProducts(chatId, categoryId);
 
-            } else if (callbackData.startsWith(BotConstants.PRODUCT_PREFIX)) {
+            } else if (callbackData.startsWith(PRODUCT_PREFIX)) {
                 Long productId = Long.parseLong(callbackData.split(":")[1]);
                 askProductQuantity(chatId, productId);
 
-            } else if (callbackData.startsWith(BotConstants.UPDATE_NAME)) {
+            } else if (callbackData.startsWith(UPDATE_NAME)) {
                 clientDataUpdateMap.put(chatId, ClientDataField.NAME);
-                sendReply(chatId, BotConstants.ENTER_NEW_NAME);
+                sendReply(chatId, ENTER_NEW_NAME);
 
-            } else if (callbackData.startsWith(BotConstants.UPDATE_ADDRESS)) {
+            } else if (callbackData.startsWith(UPDATE_ADDRESS)) {
                 clientDataUpdateMap.put(chatId, ClientDataField.ADDRESS);
-                sendReply(chatId, BotConstants.ENTER_NEW_ADDRESS);
+                sendReply(chatId, ENTER_NEW_ADDRESS);
 
-            } else if (callbackData.startsWith(BotConstants.UPDATE_PHONE)) {
+            } else if (callbackData.startsWith(UPDATE_PHONE)) {
                 clientDataUpdateMap.put(chatId, ClientDataField.PHONE);
-                sendReply(chatId, BotConstants.ENTER_NEW_PHONE);
+                sendReply(chatId, ENTER_NEW_PHONE);
 
             }
         }
