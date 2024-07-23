@@ -11,4 +11,6 @@ import java.util.List;
 public interface ClientOrderRepository extends CrudRepository<ClientOrder, Long>
 {
     List<ClientOrder> findOrderByClientId(Long client_id);
+
+    List<ClientOrder> findByClient(Client client);
 }

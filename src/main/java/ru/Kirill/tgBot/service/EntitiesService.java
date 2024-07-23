@@ -1,8 +1,12 @@
 package ru.Kirill.tgBot.service;
+import com.pengrad.telegrambot.model.request.KeyboardButton;
+import ru.Kirill.tgBot.entity.Category;
 import ru.Kirill.tgBot.entity.Client;
 import ru.Kirill.tgBot.entity.ClientOrder;
 import ru.Kirill.tgBot.entity.Product;
+import ru.Kirill.tgBot.repository.CategoryRepository;
 
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -10,6 +14,8 @@ import java.util.List;
  */
 public interface EntitiesService
 {
+
+
     /**
      * Получить список товаров в категории
      * @param id идентификатор категории
@@ -31,10 +37,15 @@ public interface EntitiesService
      * @param limit максимальное кол-во товаров
      */
     List<Product> getTopPopularProducts(Integer limit);
-    /**
-     * Найти всех клиентов по подстроке имени
-     * @param name подстрока имени клиента
-     */
+
+
+    List<Category> getCategoryByParentId(Long id);
+
+    Client getClientByExternalId(Long externalId);
+
+
+
+
     default List<Client> searchClientsByName(String name) {
         throw new UnsupportedOperationException("Доп. задание");
     }

@@ -8,5 +8,6 @@ import ru.Kirill.tgBot.entity.Client;
 public interface ClientRepository extends CrudRepository<Client, Long>
 {
 
+    Client getClientByExternalId(Long externalId);
 }
 
